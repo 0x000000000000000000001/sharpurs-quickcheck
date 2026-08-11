@@ -16,7 +16,7 @@ if [ "$CLEAN" == "1" ]; then
 fi
 
 # Remove cache for safety
-rm -rf output .spago .cache ../gopurs-*/output ../gopurs-*/.spago ../gopurs-*/.cache
+rm -rf output .spago .cache ../../gopurs/gopurs-*/output ../../gopurs/gopurs-*/.spago ../../gopurs/gopurs-*/.cache
 
 rm -f spago.yaml
 ln -s spago.go.yaml spago.yaml
@@ -25,7 +25,7 @@ echo "=== Building project with spago ==="
 spago build || { echo "Spago build failed"; exit 1; }
 
 echo "=== Generating Go code with gopurs ==="
-node ../gopurs/bin/gopurs.js --main Test.Main || exit 1
+node ../../gopurs/gopurs/bin/gopurs.js --main Test.Main || exit 1
 
 echo "=== Compiling and running Go test binary ==="
 if [ -d "output/Test.Main" ]; then
