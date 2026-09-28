@@ -15,30 +15,35 @@ if [ "$CLEAN" == "1" ]; then
   (cd "${COMPILER_DIR}" && npm run build) || { echo "Compiler build failed"; exit 1; }
 fi
 
-# Remove cache for safety
-rm -rf output .spago .cache ../../gopurs/gopurs-*/output ../../gopurs/gopurs-*/.spago ../../gopurs/gopurs-*/.cache
+if [ -d "$HOME/.dotnet" ]; then
+  export PATH="$HOME/.dotnet:$PATH"
+fi
 
-rm -f spago.yaml
-ln -s spago.go.yaml spago.yaml
+# Remove cache for safety
+rm -rf output .spago .cache ../sharpurs-*/output ../sharpurs-*/.spago ../sharpurs-*/.cache
+
+if [ -f "spago.sharp.yaml" ]; then
+    rm -f spago.yaml
+    ln -s spago.sharp.yaml spago.yaml
+elif [ -f "spago.fs.yaml" ]; then
+    rm -f spago.yaml
+    ln -s spago.fs.yaml spago.yaml
+fi
 
 echo "=== Building project with spago ==="
 spago build || { echo "Spago build failed"; exit 1; }
 
-echo "=== Generating Go code with gopurs ==="
-../../gopurs/gopurs/bin/gopurs --main Test.Main || exit 1
+echo "=== Generating code with sharpurs ==="
+../sharpurs/bin/sharpurs --main Test.Main || exit 1
 
-echo "=== Compiling and running Go test binary ==="
-if [ -d "output/Test.Main" ]; then
-    cd output
-    rm -f go.mod
-    go mod init gopurs/output > /dev/null 2>&1
-    go mod tidy > /dev/null 2>&1
-    go build -o go_test_app ./Test.Main/main
-    cd ..
-    
-    GOGC=1000 ./output/go_test_app
+echo "=== Compiling and running .NET test binary ==="
+if [ -f "output/Main/Program.fsproj" ]; then
+    dotnet run -c Release -v q --nologo --project output/Main/Program.fsproj
+elif [ -f "output/Main/Program.csproj" ]; then
+    dotnet run -c Release -v q --nologo --project output/Main/Program.csproj
 else
-    echo "No output/Test.Main/main found."
+    echo "No output/Main/Program.fsproj or Program.csproj found."
     exit 1
 fi
-echo -e "\n✅ Tests passed successfully!"
+echo -e "
+✅ Tests passed successfully!"
