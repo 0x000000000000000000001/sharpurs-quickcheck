@@ -4,3 +4,5 @@ output.bak
 .cache
 
 .psc-ide-port
+.purmeta/
+.DS_Store
